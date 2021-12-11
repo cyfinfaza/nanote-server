@@ -1,0 +1,10 @@
+app:
+  port: 8080
+  cacheDefault: false
+
+users:
+  cy:
+    name: Cy
+    picture: ./cpotify.svg
+    key: password
+    mediaRoot: "./Unlike Pluto"

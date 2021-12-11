@@ -7,10 +7,13 @@ import (
 )
 
 type Media struct {
-	MediaUrl string
-	Title, Album, Artist, Genre string
-	Year int
-	CoverUrl string
+	MediaUrl string `json:"mediaUrl"`
+	Title    string `json:"title"`
+	Album    string `json:"album"`
+	Artist   string `json:"artist"`
+	Genre    string `json:"genre"`
+	Year     int    `json:"year"`
+	CoverUrl string `json:"coverUrl"`
 }
 
 var acceptedFileTypes = []string{
@@ -24,7 +27,7 @@ var acceptedFileTypes = []string{
 }
 
 func BuildLibraryRecursive(root string, path string) ([]Media, error) {
-	directory := root + path
+	directory := filepath.Join(root, path)
 	output := []Media{}
 	dir, err := os.ReadDir(directory)
 	if err != nil {
@@ -32,31 +35,31 @@ func BuildLibraryRecursive(root string, path string) ([]Media, error) {
 		return nil, err
 	} else {
 		// fmt.Println(dir)
-		var defaultCover string;
+		var defaultCover string
 		for _, file := range dir {
 			if file.Name() == "cover.jpg" {
-				defaultCover = "/content" + path + "/" + file.Name()
+				defaultCover = filepath.Join("/content", path, file.Name())
 			}
 		}
 		for _, file := range dir {
 			// fmt.Println(file.Name())
 			// ensure the file is acceptable
 			if file.IsDir() {
-				items, err := BuildLibraryRecursive(root, path + "/" + file.Name())
+				items, err := BuildLibraryRecursive(root, filepath.Join(path, file.Name()))
 				if err != nil {
 					fmt.Println(err)
 				} else {
 					output = append(output, items...)
 				}
 			} else {
-				if ! ContainsString(acceptedFileTypes, filepath.Ext(file.Name())) {
+				if !ContainsString(acceptedFileTypes, filepath.Ext(file.Name())) {
 					continue
 				}
-				data, err := ReadMetadata(directory + "/" + file.Name())
-				new := Media{ MediaUrl: "/content" + path + "/" + file.Name() }
+				data, err := ReadMetadata(filepath.Join(directory, file.Name()))
+				new := Media{MediaUrl: filepath.Join("/content", path, file.Name())}
 				// if err is not null set the title to the path + file name, otherwise check the metadata
 				if err != nil {
-					new.Title = path + "/" + file.Name()
+					new.Title = filepath.Join(path, file.Name())
 				} else {
 					new.Title = data.Title
 					new.Album = data.Album
@@ -64,7 +67,7 @@ func BuildLibraryRecursive(root string, path string) ([]Media, error) {
 					new.Genre = data.Genre
 					new.Year = data.Year
 					if data.Picture != nil {
-						new.CoverUrl = "/coverImage" + path + "/" + file.Name()
+						new.CoverUrl = filepath.Join("/coverImage", path, file.Name())
 					} else {
 						new.CoverUrl = defaultCover
 					}

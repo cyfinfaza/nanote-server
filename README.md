@@ -4,12 +4,12 @@ A simple, stateless, straight-to-the-point media server
 - Recursively digest media collections with thousands of files  
 - Extract metadata and album art, either embedded in the file or included as `cover.jpg` in the file's directory  
 - Serve metadata library, audio data, and album art
-- HTTP basic authentication for media  
+- HTTP basic authentication  
 - Multiple users/libraries behind separate passwords  
 - Cache metadata library, with an API to trigger rebuilding  
 ## Installation
 1. [Ensure you have Go 1.16 or later installed](https://go.dev/dl/)  
-2. Clone or [download](https://github.com/cyfinfaza/nanote-server) this repository  
+2. Clone or [download](https://github.com/cyfinfaza/nanote-server/archive/refs/heads/master.zip) this repository  
 3. Run `go build` to build the binary for your platform
 4. Modify the sample `config.yml` with your configuration
 5. Run the binary you built, ensuring the config file is in the running directory

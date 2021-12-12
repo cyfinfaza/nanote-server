@@ -3,14 +3,33 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"nanote-server/utils"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 )
 
-var library []utils.Media
 var config utils.Config
+
+var cacheLocks map[string]*sync.Mutex
+
+func buildLibraryCache(user string) error {
+	cacheLocks[user].Lock()
+	defer cacheLocks[user].Unlock()
+	output, _ := utils.BuildLibraryRecursive(config.Users[user].MediaRoot, "/")
+	os.Mkdir("nanote-library-cache", 0666)
+	file, err := os.Create(filepath.Join("./nanote-library-cache", user+".json"))
+	defer file.Close()
+	if err != nil {
+		return err
+	} else {
+		json.NewEncoder(file).Encode(output)
+		return nil
+	}
+}
 
 func httpHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Server", "nanote")
@@ -46,6 +65,7 @@ func httpHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	mediaRoot := config.Users[username].MediaRoot
+	userConfig := config.Users[username]
 	switch operation {
 	case "test":
 		fmt.Fprint(w, "OK")
@@ -63,9 +83,43 @@ func httpHandler(w http.ResponseWriter, r *http.Request) {
 	case "content":
 		http.ServeFile(w, r, filepath.Join(mediaRoot, path))
 	case "library":
+		if userConfig.CacheEnabled {
+			cacheLocks[username].Lock()
+			defer cacheLocks[username].Unlock()
+			file, err := os.Open(filepath.Join("./nanote-library-cache", username+".json"))
+			defer file.Close()
+			if err == nil {
+				data, _ := ioutil.ReadAll(file)
+				var library []utils.Media
+				err = json.Unmarshal(data, &library)
+				if err == nil {
+					w.Header().Set("nanote-cache", "hit")
+					w.Header().Set("Content-Type", "application/json")
+					json.NewEncoder(w).Encode(library)
+					return
+				}
+			}
+			w.Header().Set("nanote-cache", "fail")
+		} else {
+			w.Header().Set("nanote-cache", "disabled")
+		}
 		output, _ := utils.BuildLibraryRecursive(mediaRoot, "")
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(output)
+	case "rebuildLibrary":
+		if userConfig.CacheEnabled {
+			fmt.Println("Rebuilding library cache for user", username)
+			err := buildLibraryCache(username)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				fmt.Fprint(w, err)
+			} else {
+				fmt.Fprint(w, "Success")
+			}
+		} else {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprint(w, "Cache is not enabled for this user")
+		}
 	default:
 		w.WriteHeader(http.StatusNotFound)
 		fmt.Fprint(w, "Not found")
@@ -79,6 +133,19 @@ func main() {
 	} else {
 		config = readConfig
 		fmt.Println("Config loaded")
+		// fmt.Println(config)
+	}
+	fmt.Println("Building library caches")
+	cacheLocks = make(map[string]*sync.Mutex)
+	for username, user := range config.Users {
+		if user.CacheEnabled {
+			cacheLocks[username] = &sync.Mutex{}
+			fmt.Println("Building cache for user", username)
+			err := buildLibraryCache(username)
+			if err != nil {
+				fmt.Println("Failed to create library cache for ", user, ", Error: ", err)
+			}
+		}
 	}
 	fmt.Println("Serving")
 	server := http.Server{
@@ -86,9 +153,4 @@ func main() {
 		Handler: http.HandlerFunc(httpHandler),
 	}
 	server.ListenAndServe()
-	// data, _ := utils.ReadMetadata("audio.flac")
-	// gob.NewEncoder(os.Stdout).Encode(data)
-	// fmt.Println(output)
-	// file, _ := os.OpenFile("cache.gob", os.O_RDWR|os.O_CREATE, 0666)
-	// gob.NewEncoder(file).Encode(output)
 }

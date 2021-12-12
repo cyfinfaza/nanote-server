@@ -1,6 +1,5 @@
 app:
   port: 8080
-  cacheDefault: false
 
 users:
   cy:
@@ -8,3 +7,10 @@ users:
     picture: ./cpotify.svg
     key: password
     mediaRoot: "./Unlike Pluto"
+    cache: on
+  cy2:
+    name: Cy 2
+    picture: ./cpotify.svg
+    key: password
+    mediaRoot: "./media"
+    cache: off

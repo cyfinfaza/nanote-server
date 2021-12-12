@@ -7,17 +7,17 @@ import (
 )
 
 type Config struct {
-	App struct { 
-		Port			string `yaml:"port"`
-		CacheDefault	string `yaml:"cacheDefault"`
+	App struct {
+		Port string `yaml:"port"`
 	} `yaml:"app"`
 	Users map[string]struct {
-		User 			string `yaml:"user"`
-		Name 			string `yaml:"name"`
-		Picture 		string `yaml:"picture"`
-		Key 			string `yaml:"key"`
-		Cache			bool `yaml:"cache"`
-		MediaRoot		string `yaml:"mediaRoot"`
+		User            string `yaml:"user"`
+		Name            string `yaml:"name"`
+		Picture         string `yaml:"picture"`
+		Key             string `yaml:"key"`
+		CacheEnabled    bool   `yaml:"cache"`
+		FSEventsEnabled bool   `yaml:"fsevents"`
+		MediaRoot       string `yaml:"mediaRoot"`
 	} `yaml:"users"`
 }
 

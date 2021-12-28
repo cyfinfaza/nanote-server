@@ -4,13 +4,13 @@ app:
 users:
   cy:
     name: Cy
-    picture: ./cpotify.svg
+    picture: ./profileImgs/1.jpg
     key: password
     mediaRoot: "./Unlike Pluto"
     cache: on
   cy2:
     name: Cy 2
-    picture: ./cpotify.svg
+    picture: ./profileImgs/2.jpg
     key: password
     mediaRoot: "./media"
     cache: off

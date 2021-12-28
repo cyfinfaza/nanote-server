@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -33,6 +34,12 @@ func buildLibraryCache(user string) error {
 
 func httpHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Server", "nanote")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	if r.Method == "OPTIONS" {
+		fmt.Fprintf(w, "OK")
+	}
 	operation := strings.Split(r.URL.Path, "/")[1]
 	path := strings.Join(strings.Split(r.URL.Path, "/")[2:], "/")
 	fmt.Println(operation)
@@ -57,8 +64,21 @@ func httpHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	username, password, ok := r.BasicAuth()
-	if !ok || config.Users[username].Key != password {
+	username, password, hasBasicAuth := r.BasicAuth()
+	authString, hasAuthKey := r.URL.Query()["auth"]
+	if hasAuthKey {
+		authString, err := base64.URLEncoding.DecodeString(authString[0])
+		if err != nil {
+			hasAuthKey = false
+		} else {
+
+			auth := strings.Split(string(authString), ":")
+			fmt.Println(auth)
+			username = auth[0]
+			password = auth[1]
+		}
+	}
+	if (!hasBasicAuth && !hasAuthKey) || config.Users[username].Key != password {
 		w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
 		w.WriteHeader(http.StatusUnauthorized)
 		fmt.Fprint(w, "Unauthorized")

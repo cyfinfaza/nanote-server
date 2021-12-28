@@ -1,5 +1,5 @@
 app:
-  port: 8080
+  port: 5000
 
 users:
   cy:
@@ -13,4 +13,10 @@ users:
     picture: ./profileImgs/2.jpg
     key: password
     mediaRoot: "./media"
+    cache: off
+  ytdl:
+    name: Cy 3
+    mediaRoot: "C:/Users/cyfin/Music/ytdl spotify songs 21JUN2021 2"
+    picture: ./profileImgs/2.jpg
+    key: password
     cache: off

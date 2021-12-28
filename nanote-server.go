@@ -71,7 +71,6 @@ func httpHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			hasAuthKey = false
 		} else {
-
 			auth := strings.Split(string(authString), ":")
 			fmt.Println(auth)
 			username = auth[0]
@@ -79,7 +78,9 @@ func httpHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if (!hasBasicAuth && !hasAuthKey) || config.Users[username].Key != password {
-		w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
+		if hasBasicAuth {
+			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
+		}
 		w.WriteHeader(http.StatusUnauthorized)
 		fmt.Fprint(w, "Unauthorized")
 		return
@@ -147,7 +148,12 @@ func httpHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	readConfig, err := utils.ReadConfig("./config.yml")
+	configFile := "./config.yml"
+	if len(os.Args) > 1 {
+		configFile = os.Args[1]
+	}
+	fmt.Println(configFile)
+	readConfig, err := utils.ReadConfig(configFile)
 	if err != nil {
 		panic(err)
 	} else {

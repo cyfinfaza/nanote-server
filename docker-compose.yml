@@ -1,0 +1,9 @@
+version: "3.9"
+
+services:
+  nanote-server:
+    build: .
+    volumes: 
+      - type: bind
+        source: ./config.yml # change this to wherever you want
+        target: /config.yml

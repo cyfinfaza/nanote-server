@@ -1,5 +1,5 @@
 # nanote-server
-A simple, stateless, straight-to-the-point media server  
+A simple, stateless, straight-to-the-point media server for use with [nanote](https://github.com/cyfinfaza/nanote)  
 ## Capabilities
 - Recursively digest media collections with thousands of files  
 - Extract metadata and album art, either embedded in the file or included as `cover.jpg` in the file's directory  

@@ -1,0 +1,16 @@
+app:
+  port: 5000
+
+users:
+  library:
+    name: Cy
+    mediaRoot: ./media
+    picture: ./profileImgs/1.jpg
+    key: password
+    cache: on
+  library2:
+    name: Cy 2
+    mediaRoot: 'C:\Users\username\Music\My Music Folder'
+    picture: 'C:\Users\username\Pictures\2.jpg'
+    key: password2
+    cache: off

@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type Media struct {
@@ -59,8 +60,8 @@ func BuildLibraryRecursive(root string, path string) ([]Media, error) {
 				data, err := ReadMetadata(filepath.Join(directory, file.Name()))
 				new := Media{MediaUrl: filepath.Join("/content", path, url.PathEscape(file.Name()))}
 				// if err is not null set the title to the path + file name, otherwise check the metadata
-				if err != nil {
-					new.Title = filepath.Join(path, file.Name())
+				if err != nil || data.Title == "" {
+					new.Title = strings.ReplaceAll(strings.TrimSuffix(file.Name(), filepath.Ext(file.Name())), "_", " ")
 				} else {
 					new.Title = data.Title
 					new.Album = data.Album
